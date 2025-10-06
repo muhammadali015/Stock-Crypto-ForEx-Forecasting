@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTech Forecasting Application</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #7f8c8d;
+            margin: 10px 0 0 0;
+        }
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label {
+            font-weight: 600;
+            color: #34495e;
+        }
+        .control-group select, .control-group input {
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+        .control-group select:focus, .control-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .btn-success {
+            background: #27ae60;
+        }
+        .btn-success:hover {
+            background: #229954;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+        .status.error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+        .status.info {
+            background: #d6eaf8;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+        .chart-container {
+            margin-top: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .model-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .model-info h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .metric {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .metric h4 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        .metric .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const App = () => {
+            const [instruments, setInstruments] = useState([]);
+            const [selectedInstrument, setSelectedInstrument] = useState('');
+            const [forecastHours, setForecastHours] = useState(24);
+            const [loading, setLoading] = useState(false);
+            const [status, setStatus] = useState(null);
+            const [chartData, setChartData] = useState(null);
+            const [modelInfo, setModelInfo] = useState(null);
+            const [availableModels, setAvailableModels] = useState([]);
+
+            const API_BASE = 'http://localhost:5000/api';
+
+            useEffect(() => {
+                fetchInstruments();
+            }, []);
+
+            const fetchInstruments = async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/instruments`);
+                    const data = await response.json();
+                    if (data.success) {
+                        setInstruments(data.instruments);
+                    } else {
+                        setStatus({ type: 'error', message: data.error });
+                    }
+                } catch (error) {
+                    setStatus({ type: 'error', message: 'Failed to fetch instruments' });
+                }
+            };
+
+            const addInstrument = async () => {
+                if (!selectedInstrument) {
+                    setStatus({ type: 'error', message: 'Please enter an instrument symbol' });
+                    return;
+                }
+
+                setLoading(true);
+                setStatus({ type: 'info', message: `Adding data for ${selectedInstrument}...` });
+
+                try {
+                    const response = await fetch(`${API_BASE}/instruments/${selectedInstrument}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ days: 30 })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        setStatus({ type: 'success', message: data.message });
+                        fetchInstruments(); // Refresh the list
+                    } else {
+                        setStatus({ type: 'error', message: data.error });
+                    }
+                } catch (error) {
+                    setStatus({ type: 'error', message: 'Failed to add instrument' });
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const generateForecast = async () => {
+                if (!selectedInstrument) {
+                    setStatus({ type: 'error', message: 'Please select an instrument' });
+                    return;
+                }
+
+                setLoading(true);
+                setStatus({ type: 'info', message: 'Generating forecast...' });
+
+                try {
+                    const response = await fetch(`${API_BASE}/instruments/${selectedInstrument}/forecast`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ forecast_hours: forecastHours })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        setStatus({ type: 'success', message: 'Forecast generated successfully!' });
+                        updateChart(data.forecast_results);
+                        setModelInfo(data.best_model);
+                        fetchAvailableModels();
+                    } else {
+                        setStatus({ type: 'error', message: data.error });
+                    }
+                } catch (error) {
+                    setStatus({ type: 'error', message: 'Failed to generate forecast' });
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const updateChart = (forecastResults) => {
+                const historicalData = forecastResults.metadata;
+                const forecasts = forecastResults.forecasts;
+                const bestModel = forecastResults.best_model;
+
+                // Prepare candlestick data (simplified - using close prices)
+                const historicalDates = historicalData.forecast_dates.slice(0, -forecastResults.metadata.forecast_hours);
+                const historicalPrices = historicalData.data_points;
+
+                // Create traces for historical data
+                const traces = [];
+
+                // Historical line
+                traces.push({
+                    x: historicalDates,
+                    y: Array(historicalPrices).fill(0).map((_, i) => 100 + i * 0.5 + Math.random() * 2), // Mock data
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Historical Price',
+                    line: { color: '#2c3e50', width: 2 }
+                });
+
+                // Add forecast traces
+                if (bestModel && bestModel.forecast) {
+                    const forecastDates = historicalData.forecast_dates.slice(-forecastResults.metadata.forecast_hours);
+                    traces.push({
+                        x: forecastDates,
+                        y: bestModel.forecast,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: `Forecast (${bestModel.category}/${bestModel.model_name})`,
+                        line: { color: '#e74c3c', width: 2, dash: 'dash' }
+                    });
+                }
+
+                const layout = {
+                    title: `${selectedInstrument} Price Forecast`,
+                    xaxis: { title: 'Date' },
+                    yaxis: { title: 'Price ($)' },
+                    hovermode: 'x unified',
+                    showlegend: true,
+                    margin: { t: 50, r: 50, b: 50, l: 50 }
+                };
+
+                setChartData({ data: traces, layout });
+            };
+
+            const fetchAvailableModels = async () => {
+                if (!selectedInstrument) return;
+
+                try {
+                    const response = await fetch(`${API_BASE}/instruments/${selectedInstrument}/models`);
+                    const data = await response.json();
+                    if (data.success) {
+                        setAvailableModels(data.models);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch models:', error);
+                }
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>FinTech Forecasting Application</h1>
+                        <p>AI-powered stock, crypto, and forex price forecasting</p>
+                    </div>
+
+                    {status && (
+                        <div className={`status ${status.type}`}>
+                            {status.message}
+                        </div>
+                    )}
+
+                    <div className="controls">
+                        <div className="control-group">
+                            <label>Instrument Symbol</label>
+                            <input
+                                type="text"
+                                placeholder="e.g., AAPL, BTC-USD, EURUSD"
+                                value={selectedInstrument}
+                                onChange={(e) => setSelectedInstrument(e.target.value.toUpperCase())}
+                            />
+                        </div>
+
+                        <div className="control-group">
+                            <label>Forecast Horizon</label>
+                            <select
+                                value={forecastHours}
+                                onChange={(e) => setForecastHours(parseInt(e.target.value))}
+                            >
+                                <option value={1}>1 Hour</option>
+                                <option value={3}>3 Hours</option>
+                                <option value={24}>24 Hours</option>
+                                <option value={72}>72 Hours</option>
+                                <option value={168}>1 Week</option>
+                            </select>
+                        </div>
+
+                        <button
+                            className="btn btn-success"
+                            onClick={addInstrument}
+                            disabled={loading || !selectedInstrument}
+                        >
+                            Add Instrument Data
+                        </button>
+
+                        <button
+                            className="btn"
+                            onClick={generateForecast}
+                            disabled={loading || !selectedInstrument}
+                        >
+                            Generate Forecast
+                        </button>
+                    </div>
+
+                    {loading && (
+                        <div className="loading">
+                            <div className="spinner"></div>
+                            <p>Processing...</p>
+                        </div>
+                    )}
+
+                    {chartData && (
+                        <div className="chart-container">
+                            <div id="chart"></div>
+                        </div>
+                    )}
+
+                    {modelInfo && (
+                        <div className="model-info">
+                            <h3>Best Performing Model</h3>
+                            <p><strong>Model:</strong> {modelInfo.category}/{modelInfo.model_name}</p>
+                            <p><strong>RMSE:</strong> {modelInfo.rmse?.toFixed(4)}</p>
+                            
+                            <div className="metrics">
+                                <div className="metric">
+                                    <h4>RMSE</h4>
+                                    <div className="value">{modelInfo.metrics?.rmse?.toFixed(4) || 'N/A'}</div>
+                                </div>
+                                <div className="metric">
+                                    <h4>MAE</h4>
+                                    <div className="value">{modelInfo.metrics?.mae?.toFixed(4) || 'N/A'}</div>
+                                </div>
+                                <div className="metric">
+                                    <h4>MAPE</h4>
+                                    <div className="value">{modelInfo.metrics?.mape?.toFixed(2) || 'N/A'}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {availableModels.length > 0 && (
+                        <div className="model-info">
+                            <h3>Available Models</h3>
+                            <p>Models trained for {selectedInstrument}:</p>
+                            <ul>
+                                {availableModels.map((model, index) => (
+                                    <li key={index}>{model}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Render the chart when chartData changes
+        const ChartComponent = () => {
+            const { chartData } = React.useContext(React.createContext({}));
+            
+            React.useEffect(() => {
+                if (chartData) {
+                    Plotly.newPlot('chart', chartData.data, chartData.layout, {responsive: true});
+                }
+            }, [chartData]);
+
+            return null;
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
