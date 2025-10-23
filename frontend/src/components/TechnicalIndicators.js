@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { BarChart3, TrendingUp, Activity, Zap } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -100,7 +99,6 @@ const TechnicalIndicators = ({ priceData, forecasts }) => {
     const closes = priceData.map(d => d.close_price);
     const highs = priceData.map(d => d.high_price);
     const lows = priceData.map(d => d.low_price);
-    const volumes = priceData.map(d => d.volume || 0);
 
     const rsi = calculateRSI(closes);
     const macd = calculateMACD(closes);

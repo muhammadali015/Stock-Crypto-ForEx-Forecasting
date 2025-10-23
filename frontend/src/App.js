@@ -1,18 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  TrendingUp, 
-  Brain, 
-  Zap, 
-  BarChart3, 
-  RefreshCw, 
-  Play, 
-  CheckCircle, 
-  AlertTriangle,
-  Info
+  TrendingUp
 } from 'lucide-react';
 import CandlestickChart from './components/CandlestickChart';
-import TimeRangeSelector from './components/TimeRangeSelector';
 import InstrumentSelector from './components/InstrumentSelector';
 import ModelSelector from './components/ModelSelector';
 import ForecastControls from './components/ForecastControls';

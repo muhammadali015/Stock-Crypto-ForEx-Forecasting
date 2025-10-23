@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { TrendingUp, RefreshCw } from 'lucide-react';
 
 const InstrumentSelector = ({ instruments, selectedInstrument, onInstrumentChange, onRefreshData }) => {

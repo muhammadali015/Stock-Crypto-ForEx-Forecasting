@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import { TrendingUp, ZoomIn, ZoomOut, RotateCcw, Maximize2 } from 'lucide-react';
 import { createChart } from 'lightweight-charts';
 
@@ -241,7 +240,6 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
     
     // Add lower confidence bounds (reverse order for area chart)
     forecasts.predictions.forEach((prediction, index) => {
-      const timestamp = lastTime + (index + 1) * 3600;
       const reverseIndex = forecasts.predictions.length - 1 - index;
       const reverseTimestamp = lastTime + (reverseIndex + 1) * 3600;
       confidenceMap.set(reverseTimestamp, {

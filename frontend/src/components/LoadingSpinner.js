@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
 const LoadingSpinner = () => (
   <div className="glass-card p-6">

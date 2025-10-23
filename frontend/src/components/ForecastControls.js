@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Zap, Info } from 'lucide-react';
 
 const ForecastControls = ({ onGenerateForecast, isGenerating, trainedModelId }) => {

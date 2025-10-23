@@ -106,31 +106,26 @@ const PerformanceMetrics = ({ metrics }) => {
     }
 
     let score = 0;
-    let count = 0;
 
     // RMSE scoring (lower is better)
     if (metrics.rmse < 2) score += 25;
     else if (metrics.rmse < 5) score += 15;
     else score += 5;
-    count++;
 
     // MAE scoring (lower is better)
     if (metrics.mae < 1.5) score += 25;
     else if (metrics.mae < 3) score += 15;
     else score += 5;
-    count++;
 
     // MAPE scoring (lower is better)
     if (metrics.mape < 2) score += 25;
     else if (metrics.mape < 5) score += 15;
     else score += 5;
-    count++;
 
     // Directional Accuracy scoring (higher is better)
     if (metrics.directional_accuracy > 65) score += 25;
     else if (metrics.directional_accuracy > 55) score += 15;
     else score += 5;
-    count++;
 
     return Math.round(score);
   };

@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Brain, Play, BarChart3, CheckCircle } from 'lucide-react';
 
 const ModelSelector = ({ models, selectedModel, onModelChange, onTrainModel, onEvaluateModel, isTraining, trainedModelId }) => {
