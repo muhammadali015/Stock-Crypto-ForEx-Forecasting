@@ -4,7 +4,7 @@
   "description": "Complete FinTech forecasting application with React frontend and Flask backend",
   "scripts": {
   
-     "build": "CI=false react-scripts build"
+     "build": "CI=false react-scripts build",
     "start": "python app.py"
   },
   "engines": {
