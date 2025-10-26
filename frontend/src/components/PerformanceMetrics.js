@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { BarChart3, TrendingUp, TrendingDown, Target, Zap } from 'lucide-react';
 
 const PerformanceMetrics = ({ metrics }) => {
@@ -141,11 +140,7 @@ const PerformanceMetrics = ({ metrics }) => {
       
       {/* Overall Score */}
       {overallScore !== null && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 p-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-white/20"
-        >
+        <div className="mb-6 p-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-white/20">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-lg font-semibold text-white">Overall Performance</h4>
@@ -160,17 +155,14 @@ const PerformanceMetrics = ({ metrics }) => {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Individual Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {metricCards.map((metric, index) => (
-          <motion.div
+          <div
             key={metric.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
             className="metric-card group"
           >
             <div className="flex items-center justify-between mb-3">
@@ -197,14 +189,12 @@ const PerformanceMetrics = ({ metrics }) => {
             {metric.label === 'Directional Accuracy' && metric.value !== 'N/A' && (
               <div className="mt-3">
                 <div className="w-full bg-white/10 rounded-full h-2">
-                  <motion.div
+                  <div
                     className={`h-2 rounded-full ${
                       parseFloat(metric.value) > 65 ? 'bg-green-400' :
                       parseFloat(metric.value) > 55 ? 'bg-yellow-400' : 'bg-red-400'
                     }`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${parseFloat(metric.value)}%` }}
-                    transition={{ duration: 1, delay: index * 0.1 + 0.5 }}
+                    style={{ width: `${parseFloat(metric.value)}%` }}
                   />
                 </div>
                 <div className="text-xs text-white/60 mt-1">
@@ -212,18 +202,13 @@ const PerformanceMetrics = ({ metrics }) => {
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
         ))}
       </div>
 
       {/* Performance Insights */}
       {overallScore !== null && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10"
-        >
+        <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
           <h4 className="text-sm font-semibold text-white mb-2">Performance Insights</h4>
           <div className="text-xs text-white/70 space-y-1">
             {metrics.directional_accuracy > 65 && (
@@ -251,7 +236,7 @@ const PerformanceMetrics = ({ metrics }) => {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );
