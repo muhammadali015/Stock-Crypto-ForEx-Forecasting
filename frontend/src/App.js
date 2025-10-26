@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  TrendingUp
-} from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import CandlestickChart from './components/CandlestickChart';
 import InstrumentSelector from './components/InstrumentSelector';
 import ModelSelector from './components/ModelSelector';
@@ -194,83 +191,42 @@ function App() {
 
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-8"
-        >
+        <div className="text-center mb-8">
           <h1 className="title flex items-center justify-center gap-4">
             <TrendingUp className="w-12 h-12" />
             FinTech Forecasting Dashboard
           </h1>
-        </motion.div>
+        </div>
 
         {/* Messages */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <ErrorMessage message={error} />
-            </motion.div>
-          )}
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <SuccessMessage message={success} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {error && <ErrorMessage message={error} />}
+        {success && <SuccessMessage message={success} />}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <InstrumentSelector
-                instruments={instruments}
-                selectedInstrument={selectedInstrument}
-                onInstrumentChange={handleInstrumentChange}
-                onRefreshData={refreshData}
-              />
-            </motion.div>
+            <InstrumentSelector
+              instruments={instruments}
+              selectedInstrument={selectedInstrument}
+              onInstrumentChange={handleInstrumentChange}
+              onRefreshData={refreshData}
+            />
             
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <ModelSelector
-                models={models}
-                selectedModel={selectedModel}
-                onModelChange={setSelectedModel}
-                onTrainModel={trainModel}
-                onEvaluateModel={evaluateModel}
-                isTraining={isTraining}
-                trainedModelId={trainedModelId}
-              />
-            </motion.div>
+            <ModelSelector
+              models={models}
+              selectedModel={selectedModel}
+              onModelChange={setSelectedModel}
+              onTrainModel={trainModel}
+              onEvaluateModel={evaluateModel}
+              isTraining={isTraining}
+              trainedModelId={trainedModelId}
+            />
             
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <ForecastControls
-                onGenerateForecast={generateForecast}
-                isGenerating={isGenerating}
-                trainedModelId={trainedModelId}
-              />
-            </motion.div>
+            <ForecastControls
+              onGenerateForecast={generateForecast}
+              isGenerating={isGenerating}
+              trainedModelId={trainedModelId}
+            />
           </div>
           
           {/* Main Content */}
@@ -279,39 +235,21 @@ function App() {
               <LoadingSpinner />
             ) : (
               <>
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                  <CandlestickChart
-                    priceData={priceData}
-                    forecasts={forecasts}
-                    timeRange={timeRange}
-                    onTimeRangeChange={handleTimeRangeChange}
-                  />
-                </motion.div>
+                <CandlestickChart
+                  priceData={priceData}
+                  forecasts={forecasts}
+                  timeRange={timeRange}
+                  onTimeRangeChange={handleTimeRangeChange}
+                />
                 
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  <PerformanceMetrics
-                    metrics={performanceMetrics}
-                  />
-                </motion.div>
+                <PerformanceMetrics
+                  metrics={performanceMetrics}
+                />
                 
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                >
-                  <TechnicalIndicators
-                    priceData={priceData}
-                    forecasts={forecasts}
-                  />
-                </motion.div>
+                <TechnicalIndicators
+                  priceData={priceData}
+                  forecasts={forecasts}
+                />
               </>
             )}
           </div>
