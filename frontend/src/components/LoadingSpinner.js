@@ -1,5 +1,4 @@
 import React from 'react';
-
 const LoadingSpinner = () => (
   <div className="glass-card p-6">
     <div className="loading-spinner">
