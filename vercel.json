@@ -25,6 +25,5 @@
   ],
   "env": {
     "PYTHON_VERSION": "3.9"
-  },
-  "ignoreCommand": "npm run build"
+  }
 }
