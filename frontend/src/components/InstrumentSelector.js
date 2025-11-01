@@ -1,4 +1,5 @@
 import React from 'react';
+import { TrendingUp, RefreshCw } from 'lucide-react';
 
 const InstrumentSelector = ({ instruments, selectedInstrument, onInstrumentChange, onRefreshData }) => {
   return (

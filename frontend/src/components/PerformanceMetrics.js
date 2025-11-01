@@ -24,13 +24,13 @@ const PerformanceMetrics = ({ metrics }) => {
   const getMetricColor = (label, value) => {
     switch (label) {
       case 'RMSE':
-        return value < 2 ? 'text-green-400' : value < 5 ? 'text-yellow-400' : 'text-red-400';
+        return value < 2 ? 'text-[#00ff9f]' : value < 5 ? 'text-[#00fff2]' : 'text-[#ff4444]';
       case 'MAE':
-        return value < 1.5 ? 'text-green-400' : value < 3 ? 'text-yellow-400' : 'text-red-400';
+        return value < 1.5 ? 'text-[#00ff9f]' : value < 3 ? 'text-[#00fff2]' : 'text-[#ff4444]';
       case 'MAPE':
-        return value < 2 ? 'text-green-400' : value < 5 ? 'text-yellow-400' : 'text-red-400';
+        return value < 2 ? 'text-[#00ff9f]' : value < 5 ? 'text-[#00fff2]' : 'text-[#ff4444]';
       case 'Directional Accuracy':
-        return value > 65 ? 'text-green-400' : value > 55 ? 'text-yellow-400' : 'text-red-400';
+        return value > 65 ? 'text-[#00ff9f]' : value > 55 ? 'text-[#00fff2]' : 'text-[#ff4444]';
       default:
         return 'text-white';
     }
@@ -140,17 +140,17 @@ const PerformanceMetrics = ({ metrics }) => {
       
       {/* Overall Score */}
       {overallScore !== null && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-white/20">
+        <div className="mb-6 p-4 bg-gradient-to-r from-[#00fff2]/15 to-[#b980ff]/15 rounded-lg border border-[#00fff2]/30 relative z-10" style={{backgroundColor: 'rgba(11, 13, 16, 0.85)', backdropFilter: 'none'}}>
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-lg font-semibold text-white">Overall Performance</h4>
-              <p className="text-sm text-white/70">Based on all metrics</p>
+              <h4 className="text-lg font-semibold text-white" style={{color: '#ffffff', textShadow: '0 0 10px rgba(255, 255, 255, 0.3)'}}>Overall Performance</h4>
+              <p className="text-sm text-white" style={{color: '#ffffff', opacity: 0.9}}>Based on all metrics</p>
             </div>
             <div className="text-right">
-              <div className={`text-3xl font-bold ${overallScore >= 80 ? 'text-green-400' : overallScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+              <div className={`text-3xl font-bold ${overallScore >= 80 ? 'text-[#00ff9f]' : overallScore >= 60 ? 'text-[#00fff2]' : 'text-[#ff4444]'}`} style={{textShadow: overallScore >= 80 ? '0 0 15px rgba(0, 255, 159, 0.5)' : overallScore >= 60 ? '0 0 15px rgba(0, 255, 242, 0.5)' : '0 0 15px rgba(255, 68, 68, 0.5)'}}>
                 {overallScore}/100
               </div>
-              <div className="text-sm text-white/70">
+              <div className="text-sm text-white" style={{color: '#ffffff', opacity: 0.9}}>
                 {overallScore >= 80 ? 'Excellent' : overallScore >= 60 ? 'Good' : 'Needs Improvement'}
               </div>
             </div>
@@ -170,9 +170,9 @@ const PerformanceMetrics = ({ metrics }) => {
                 {metric.icon}
               </div>
               <div className={`text-xs px-2 py-1 rounded-full ${
-                metric.performance === 'Excellent' ? 'bg-green-500/20 text-green-400' :
-                metric.performance === 'Good' ? 'bg-yellow-500/20 text-yellow-400' :
-                'bg-red-500/20 text-red-400'
+                metric.performance === 'Excellent' ? 'bg-[#00ff9f]/20 text-[#00ff9f] border border-[#00ff9f]/30' :
+                metric.performance === 'Good' ? 'bg-[#00fff2]/20 text-[#00fff2] border border-[#00fff2]/30' :
+                'bg-[#ff4444]/20 text-[#ff4444] border border-[#ff4444]/30'
               }`}>
                 {metric.performance}
               </div>
@@ -191,8 +191,8 @@ const PerformanceMetrics = ({ metrics }) => {
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${
-                      parseFloat(metric.value) > 65 ? 'bg-green-400' :
-                      parseFloat(metric.value) > 55 ? 'bg-yellow-400' : 'bg-red-400'
+                      parseFloat(metric.value) > 65 ? 'bg-[#00ff9f] shadow-[0_0_8px_rgba(0,255,159,0.5)]' :
+                      parseFloat(metric.value) > 55 ? 'bg-[#00fff2] shadow-[0_0_8px_rgba(0,255,242,0.5)]' : 'bg-[#ff4444] shadow-[0_0_8px_rgba(255,68,68,0.5)]'
                     }`}
                     style={{ width: `${parseFloat(metric.value)}%` }}
                   />
@@ -208,31 +208,31 @@ const PerformanceMetrics = ({ metrics }) => {
 
       {/* Performance Insights */}
       {overallScore !== null && (
-        <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
-          <h4 className="text-sm font-semibold text-white mb-2">Performance Insights</h4>
-          <div className="text-xs text-white/70 space-y-1">
+        <div className="mt-6 p-4 bg-white/5 rounded-lg border border-[#00fff2]/10 relative z-10" style={{backgroundColor: 'rgba(11, 13, 16, 0.85)', backdropFilter: 'none'}}>
+          <h4 className="text-sm font-semibold text-white mb-2" style={{color: '#ffffff', textShadow: '0 0 10px rgba(255, 255, 255, 0.3)'}}>Performance Insights</h4>
+          <div className="text-xs text-white space-y-1" style={{color: '#ffffff', opacity: 0.95}}>
             {metrics.directional_accuracy > 65 && (
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-3 h-3 text-green-400" />
-                <span>Strong directional accuracy - model predicts price direction well</span>
+                <TrendingUp className="w-3 h-3 text-[#00ff9f]" style={{filter: 'drop-shadow(0 0 5px rgba(0, 255, 159, 0.6))'}} />
+                <span style={{color: '#ffffff', opacity: 0.95}}>Strong directional accuracy - model predicts price direction well</span>
               </div>
             )}
             {metrics.rmse < 2 && (
               <div className="flex items-center gap-2">
-                <Target className="w-3 h-3 text-green-400" />
-                <span>Low prediction error - forecasts are highly accurate</span>
+                <Target className="w-3 h-3 text-[#00ff9f]" style={{filter: 'drop-shadow(0 0 5px rgba(0, 255, 159, 0.6))'}} />
+                <span style={{color: '#ffffff', opacity: 0.95}}>Low prediction error - forecasts are highly accurate</span>
               </div>
             )}
             {metrics.mape < 2 && (
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-3 h-3 text-green-400" />
-                <span>Excellent percentage accuracy - minimal relative error</span>
+                <BarChart3 className="w-3 h-3 text-[#00ff9f]" style={{filter: 'drop-shadow(0 0 5px rgba(0, 255, 159, 0.6))'}} />
+                <span style={{color: '#ffffff', opacity: 0.95}}>Excellent percentage accuracy - minimal relative error</span>
               </div>
             )}
             {overallScore < 60 && (
               <div className="flex items-center gap-2">
-                <TrendingDown className="w-3 h-3 text-yellow-400" />
-                <span>Consider retraining with more data or different parameters</span>
+                <TrendingDown className="w-3 h-3 text-[#00fff2]" style={{filter: 'drop-shadow(0 0 5px rgba(0, 255, 242, 0.6))'}} />
+                <span style={{color: '#ffffff', opacity: 0.95}}>Consider retraining with more data or different parameters</span>
               </div>
             )}
           </div>

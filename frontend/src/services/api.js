@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? (process.env.REACT_APP_API_URL || 'http://localhost:8000/api')
-  : '/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -109,6 +107,66 @@ export const apiService = {
     api.get(`/instruments/${instrumentId}/news?limit=${limit}`),
   refreshNewsData: (instrumentId) => 
     api.post(`/instruments/${instrumentId}/news`),
+
+  // Adaptive Learning
+  adaptiveUpdate: (modelId, instrumentId, learningStrategy = 'incremental') =>
+    api.post(`/models/${modelId}/adaptive-update`, {
+      instrument_id: instrumentId,
+      learning_strategy: learningStrategy
+    }),
+  createRetrainingSchedule: (modelId, scheduleType, frequencyHours, triggerThreshold) =>
+    api.post(`/models/${modelId}/retraining-schedule`, {
+      schedule_type: scheduleType,
+      frequency_hours: frequencyHours,
+      trigger_threshold: triggerThreshold
+    }),
+
+  // Continuous Evaluation
+  evaluatePrediction: (modelId, forecastId, actualValues, instrumentId) =>
+    api.post(`/evaluation/${modelId}/evaluate`, {
+      forecast_id: forecastId,
+      actual_values: actualValues,
+      instrument_id: instrumentId
+    }),
+  getEvaluationMetrics: (modelId, limit = 50) =>
+    api.get(`/evaluation/${modelId}/metrics?limit=${limit}`),
+  getForecastErrors: (forecastId) =>
+    api.get(`/forecasts/${forecastId}/errors`),
+
+  // Portfolio Management
+  createPortfolio: (name, initialCapital) =>
+    api.post('/portfolios', {
+      name: name,
+      initial_capital: initialCapital
+    }),
+  getPortfolios: () => api.get('/portfolios'),
+  getPortfolio: (id) => api.get(`/portfolios/${id}`),
+  buyInstrument: (portfolioId, instrumentId, quantity, price, modelId = null) =>
+    api.post(`/portfolios/${portfolioId}/buy`, {
+      instrument_id: instrumentId,
+      quantity: quantity,
+      price: price,
+      model_id: modelId
+    }),
+  sellInstrument: (portfolioId, instrumentId, quantity, price, modelId = null) =>
+    api.post(`/portfolios/${portfolioId}/sell`, {
+      instrument_id: instrumentId,
+      quantity: quantity,
+      price: price,
+      model_id: modelId
+    }),
+  getPortfolioPositions: (portfolioId) =>
+    api.get(`/portfolios/${portfolioId}/positions`),
+    getPortfolioMetrics: (portfolioId) =>
+      api.get(`/portfolios/${portfolioId}/metrics`),
+    getPortfolioMetricsHistory: (portfolioId, limit = 100) =>
+      api.get(`/portfolios/${portfolioId}/metrics/history?limit=${limit}`),
+    getPortfolioTransactions: (portfolioId, limit = 100) =>
+      api.get(`/portfolios/${portfolioId}/transactions?limit=${limit}`),
+  deletePortfolio: (portfolioId) =>
+    api.delete(`/portfolios/${portfolioId}`),
+  deletePortfoliosByName: (name) =>
+    api.post('/portfolios/delete-by-name', { name: name }),
 };
 
 export default apiService;

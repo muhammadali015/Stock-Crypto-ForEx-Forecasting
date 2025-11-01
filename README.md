@@ -404,7 +404,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/muhammadali015/Stock-Crypto-ForEx-Forecasting/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/muhammadali015/Stock-Crypto-ForEx-Forecasting/discussions)
-- **Documentation**: Check the `docs/` folder for detailed guides
+- **Documentation**: See README.md for detailed information
 
 ---
 

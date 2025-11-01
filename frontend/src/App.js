@@ -9,6 +9,8 @@ import TechnicalIndicators from './components/TechnicalIndicators';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
 import SuccessMessage from './components/SuccessMessage';
+import PortfolioManager from './components/PortfolioManager';
+import PortfolioGrowthChart from './components/PortfolioGrowthChart';
 import apiService from './services/api';
 
 function App() {
@@ -26,6 +28,9 @@ function App() {
   const [isTraining, setIsTraining] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [timeRange, setTimeRange] = useState('1w');
+  const [predictionErrors, setPredictionErrors] = useState([]);
+  const [portfolioValueHistory, setPortfolioValueHistory] = useState([]);
+  const [portfolioInitialCapital, setPortfolioInitialCapital] = useState(null);
 
   // Load instruments on component mount
   useEffect(() => {
@@ -157,6 +162,18 @@ function App() {
       const data = await apiService.generateForecast(modelId, horizon, confidenceLevel, selectedInstrument.id);
       setForecasts(data);
       setSuccess(`Forecast generated for ${horizon} hours`);
+      
+      // Try to load prediction errors if available
+      try {
+        const latestForecast = await apiService.getForecasts(selectedInstrument.id, 1);
+        if (latestForecast && latestForecast.length > 0) {
+          const errors = await apiService.getForecastErrors(latestForecast[0].id);
+          setPredictionErrors(errors);
+        }
+      } catch (err) {
+        // Errors may not exist yet, which is fine
+        console.log('No prediction errors available yet');
+      }
     } catch (err) {
       console.error('Error generating forecast:', err);
       setError(`Failed to generate forecast: ${err.message}`);
@@ -180,16 +197,16 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20"></div>
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-gradient-to-br from-[#0b0d10] via-[#1a1c1f] to-[#0f1114] relative">
+      {/* Background Effects - Fixed positioning to cover full viewport */}
+      <div className="fixed inset-0 bg-gradient-to-br from-[#0b0d10] via-[#1a1c1f] to-[#0f1114] pointer-events-none z-0"></div>
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-[#00fff2]/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#b980ff]/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[#00ff9f]/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-20 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="title flex items-center justify-center gap-4">
@@ -240,6 +257,9 @@ function App() {
                   forecasts={forecasts}
                   timeRange={timeRange}
                   onTimeRangeChange={handleTimeRangeChange}
+                  predictionErrors={predictionErrors}
+                  portfolioValueHistory={portfolioValueHistory}
+                  initialCapital={portfolioInitialCapital}
                 />
                 
                 <PerformanceMetrics
@@ -249,6 +269,21 @@ function App() {
                 <TechnicalIndicators
                   priceData={priceData}
                   forecasts={forecasts}
+                />
+                
+                {portfolioValueHistory && portfolioValueHistory.length > 0 && (
+                  <PortfolioGrowthChart
+                    portfolioMetricsHistory={portfolioValueHistory}
+                    initialCapital={portfolioInitialCapital}
+                  />
+                )}
+                
+                <PortfolioManager
+                  selectedInstrument={selectedInstrument}
+                  onPortfolioDataUpdate={(data) => {
+                    setPortfolioValueHistory(data.history || []);
+                    setPortfolioInitialCapital(data.initialCapital || null);
+                  }}
                 />
               </>
             )}

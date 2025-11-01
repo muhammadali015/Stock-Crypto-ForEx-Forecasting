@@ -26,13 +26,15 @@ const TimeRangeSelector = ({ selectedRange, onRangeChange }) => {
   );
 };
 
-const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }) => {
+const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange, predictionErrors, portfolioValueHistory, initialCapital }) => {
   const chartContainerRef = useRef();
   const chartRef = useRef();
   const candlestickSeriesRef = useRef();
   const volumeSeriesRef = useRef();
   const forecastSeriesRef = useRef();
   const confidenceSeriesRef = useRef();
+  const errorSeriesRef = useRef();
+  const portfolioValueSeriesRef = useRef();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [chartReady, setChartReady] = useState(false);
 
@@ -53,23 +55,35 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
       width: chartContainerRef.current.clientWidth,
       height: 500,
       layout: {
-        background: { color: 'rgba(0, 0, 0, 0.1)' },
-        textColor: '#ffffff',
+        background: { color: 'rgba(11, 13, 16, 0.8)' },
+        textColor: '#00fff2',
       },
       grid: {
-        vertLines: { color: 'rgba(255, 255, 255, 0.1)' },
-        horzLines: { color: 'rgba(255, 255, 255, 0.1)' },
+        vertLines: { color: 'rgba(0, 255, 242, 0.15)' },
+        horzLines: { color: 'rgba(0, 255, 242, 0.15)' },
       },
       crosshair: {
         mode: 1,
+        vertLine: {
+          color: '#00fff2',
+          width: 1,
+          style: 2,
+        },
+        horzLine: {
+          color: '#00fff2',
+          width: 1,
+          style: 2,
+        },
       },
       rightPriceScale: {
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderColor: 'rgba(0, 255, 242, 0.2)',
+        textColor: '#00fff2',
       },
       timeScale: {
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderColor: 'rgba(0, 255, 242, 0.2)',
         timeVisible: true,
         secondsVisible: false,
+        textColor: '#00fff2',
       },
       handleScroll: {
         mouseWheel: true,
@@ -84,17 +98,17 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
 
     // Create candlestick series
     const candlestickSeries = chart.addCandlestickSeries({
-      upColor: '#26a69a',
-      downColor: '#ef5350',
-      borderDownColor: '#ef5350',
-      borderUpColor: '#26a69a',
-      wickDownColor: '#ef5350',
-      wickUpColor: '#26a69a',
+      upColor: '#00ff9f',
+      downColor: '#ff4444',
+      borderDownColor: '#ff4444',
+      borderUpColor: '#00ff9f',
+      wickDownColor: '#ff4444',
+      wickUpColor: '#00ff9f',
     });
 
     // Create volume series
     const volumeSeries = chart.addHistogramSeries({
-      color: 'rgba(102, 126, 234, 0.3)',
+      color: 'rgba(0, 255, 242, 0.3)',
       priceFormat: {
         type: 'volume',
       },
@@ -107,19 +121,39 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
 
     // Create forecast series
     const forecastSeries = chart.addLineSeries({
-      color: '#ffd700',
+      color: '#00fff2',
       lineWidth: 2,
       lineStyle: 2, // dashed
       title: 'Forecast',
+      priceLineVisible: false,
     });
 
     // Create confidence interval series
     const confidenceSeries = chart.addAreaSeries({
-      topColor: 'rgba(255, 215, 0, 0.1)',
-      bottomColor: 'rgba(255, 215, 0, 0.05)',
-      lineColor: 'rgba(255, 215, 0, 0.3)',
+      topColor: 'rgba(0, 255, 242, 0.15)',
+      bottomColor: 'rgba(0, 255, 242, 0.05)',
+      lineColor: 'rgba(0, 255, 242, 0.4)',
       lineWidth: 1,
       title: 'Confidence Interval',
+    });
+
+    // Create error overlay series (line showing error bars)
+    const errorSeries = chart.addLineSeries({
+      color: '#ff4444',
+      lineWidth: 2,
+      lineStyle: 3, // dotted
+      title: 'Prediction Error',
+      priceLineVisible: false,
+    });
+
+    // Create portfolio value overlay series
+    const portfolioValueSeries = chart.addLineSeries({
+      color: '#b980ff',
+      lineWidth: 2,
+      lineStyle: 0, // solid
+      title: 'Portfolio Value',
+      priceLineVisible: false,
+      priceScaleId: 'right', // Use right price scale for portfolio value
     });
 
     chartRef.current = chart;
@@ -127,6 +161,8 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
     volumeSeriesRef.current = volumeSeries;
     forecastSeriesRef.current = forecastSeries;
     confidenceSeriesRef.current = confidenceSeries;
+    errorSeriesRef.current = errorSeries;
+    portfolioValueSeriesRef.current = portfolioValueSeries;
 
     setChartReady(true);
 
@@ -183,7 +219,7 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
       volumeMap.set(timestamp, {
         time: timestamp,
         value: d.volume || 0,
-        color: d.close_price >= d.open_price ? '#26a69a' : '#ef5350',
+        color: d.close_price >= d.open_price ? '#00ff9f' : '#ff4444',
       });
     });
     const volumeData = Array.from(volumeMap.values());
@@ -257,6 +293,93 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
     forecastSeriesRef.current.setData(forecastData);
     confidenceSeriesRef.current.setData(confidenceData);
   }, [chartReady, forecasts, priceData, timeRange]);
+
+  // Update error overlay data
+  useEffect(() => {
+    if (!chartReady || !predictionErrors || predictionErrors.length === 0) {
+      if (errorSeriesRef.current) {
+        errorSeriesRef.current.setData([]);
+      }
+      return;
+    }
+
+    if (!forecasts || !priceData || priceData.length === 0) return;
+
+    const filteredData = filterDataByTimeRange(priceData, timeRange);
+    const sortedData = [...filteredData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    const dataMap = new Map();
+    sortedData.forEach(item => {
+      const timestamp = new Date(item.date).getTime() / 1000;
+      dataMap.set(timestamp, item);
+    });
+    const uniqueData = Array.from(dataMap.values());
+    
+    const lastDataPoint = uniqueData[uniqueData.length - 1];
+    const lastTime = new Date(lastDataPoint.date).getTime() / 1000;
+
+    // Create error overlay data
+    const errorData = predictionErrors.map(error => ({
+      time: lastTime + (error.prediction_index + 1) * 3600,
+      value: error.error_value, // Display error magnitude
+    }));
+
+    errorSeriesRef.current.setData(errorData);
+  }, [chartReady, predictionErrors, priceData, timeRange, forecasts]);
+
+  // Update portfolio value overlay
+  useEffect(() => {
+    if (!chartReady || !portfolioValueHistory || portfolioValueHistory.length === 0) {
+      if (portfolioValueSeriesRef.current) {
+        portfolioValueSeriesRef.current.setData([]);
+      }
+      return;
+    }
+
+    if (!priceData || priceData.length === 0) return;
+
+    const filteredData = filterDataByTimeRange(priceData, timeRange);
+    const sortedData = [...filteredData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    const dataMap = new Map();
+    sortedData.forEach(item => {
+      const timestamp = new Date(item.date).getTime() / 1000;
+      dataMap.set(timestamp, item);
+    });
+    const uniqueData = Array.from(dataMap.values());
+
+    // Align portfolio values with price data timestamps
+    // Map portfolio metrics dates to closest price data points
+    const portfolioData = portfolioValueHistory.map((metric) => {
+      const metricDate = new Date(metric.metric_date);
+      let closestPricePoint = uniqueData[0];
+      let minDiff = Math.abs(new Date(closestPricePoint.date).getTime() - metricDate.getTime());
+
+      for (const pricePoint of uniqueData) {
+        const diff = Math.abs(new Date(pricePoint.date).getTime() - metricDate.getTime());
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestPricePoint = pricePoint;
+        }
+      }
+
+      return {
+        time: new Date(closestPricePoint.date).getTime() / 1000,
+        value: metric.total_value || (initialCapital || 10000)
+      };
+    });
+
+    // Remove duplicates and sort
+    const portfolioMap = new Map();
+    portfolioData.forEach(item => {
+      portfolioMap.set(item.time, item);
+    });
+    const uniquePortfolioData = Array.from(portfolioMap.values()).sort((a, b) => a.time - b.time);
+
+    if (portfolioValueSeriesRef.current && uniquePortfolioData.length > 0) {
+      portfolioValueSeriesRef.current.setData(uniquePortfolioData);
+    }
+  }, [chartReady, portfolioValueHistory, priceData, timeRange, initialCapital]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -351,9 +474,9 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center text-white">
-              <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <h4 className="text-xl font-semibold mb-2">No Data Available</h4>
-              <p className="text-sm opacity-75">
+              <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-50 text-[#00fff2]" />
+              <h4 className="text-xl font-semibold mb-2 text-[#00fff2]">No Data Available</h4>
+              <p className="text-sm opacity-75 text-white/60">
                 Select an instrument to view price data
               </p>
             </div>
@@ -365,24 +488,36 @@ const CandlestickChart = ({ priceData, forecasts, timeRange, onTimeRangeChange }
       {priceData && priceData.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-4 text-sm text-white/80">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-400 rounded"></div>
-            <span>Bullish Candles</span>
+            <div className="w-3 h-3 bg-[#00ff9f] rounded shadow-[0_0_8px_rgba(0,255,159,0.5)]"></div>
+            <span className="text-white/90">Bullish Candles</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-400 rounded"></div>
-            <span>Bearish Candles</span>
+            <div className="w-3 h-3 bg-[#ff4444] rounded shadow-[0_0_8px_rgba(255,68,68,0.5)]"></div>
+            <span className="text-white/90">Bearish Candles</span>
           </div>
           {forecasts && (
             <>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-0.5 bg-yellow-400 border-dashed border-t-2"></div>
-                <span>Forecast</span>
+                <div className="w-3 h-0.5 bg-[#00fff2] border-dashed border-t-2 shadow-[0_0_8px_rgba(0,255,242,0.5)]"></div>
+                <span className="text-white/90">Forecast</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-400/20 rounded"></div>
-                <span>Confidence Interval</span>
+                <div className="w-3 h-3 bg-[#00fff2]/20 rounded shadow-[0_0_8px_rgba(0,255,242,0.3)]"></div>
+                <span className="text-white/90">Confidence Interval</span>
               </div>
             </>
+          )}
+          {predictionErrors && predictionErrors.length > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-0.5 bg-[#ff4444] border-dotted border-t-2 shadow-[0_0_8px_rgba(255,68,68,0.5)]"></div>
+              <span className="text-white/90">Prediction Error</span>
+            </div>
+          )}
+          {portfolioValueHistory && portfolioValueHistory.length > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-0.5 bg-[#b980ff] border-t-2 shadow-[0_0_8px_rgba(185,128,255,0.5)]"></div>
+              <span className="text-white/90">Portfolio Value</span>
+            </div>
           )}
         </div>
       )}
