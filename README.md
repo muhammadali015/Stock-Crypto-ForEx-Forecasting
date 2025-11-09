@@ -302,13 +302,7 @@ npm run build
 gunicorn -w 4 -b 0.0.0.0:8000 backend.app_sqlite:app
 ```
 
-## 📚 Documentation
 
-### Technical Reports
-- **[SHORT_TECHNICAL_REPORT.md](SHORT_TECHNICAL_REPORT.md)**: Comprehensive technical analysis
-- **[CONCISE_TECHNICAL_REPORT.md](CONCISE_TECHNICAL_REPORT.md)**: Executive summary
-- **[VISUALIZATION_ENHANCEMENT.md](VISUALIZATION_ENHANCEMENT.md)**: Frontend improvements
-- **[COMPLETE_ANALYSIS_AND_FIXES.md](COMPLETE_ANALYSIS_AND_FIXES.md)**: Bug fixes and improvements
 
 ### Architecture Documentation
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**: Detailed system architecture
